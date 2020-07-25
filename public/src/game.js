@@ -43,6 +43,7 @@ class HomeScene extends Phaser.Scene {
         this.load.image('join', '../assets/join.png');
         this.load.image('create', '../assets/create.png');
         this.load.image('footer', '../assets/footer.png')
+        this.load.image('wallet', '../assets/wallet.png')
     }
 
     create() {
@@ -51,7 +52,9 @@ class HomeScene extends Phaser.Scene {
         let x = config.width / 2;
         let y = config.height / 2;
 
-        this.add.image(x, 80, 'title');
+        this.add.image(x, 60, 'title');
+        this.add.image(x - 35, y - 140, 'wallet');
+        this.add.text(x + 5, y - 155, GAMEDATA.cash, {fontStyle: 'bold', fontSize: '35px', color: '#b9d370'});
         this.add.image(x, config.height - 40, 'footer');
 
         let roomName = `<input type="text" name="roomName" placeholder="Room Name"
@@ -60,7 +63,7 @@ class HomeScene extends Phaser.Scene {
         this.roomName = this.add.dom(x, y - 36).createFromHTML(roomName);
 
         if(GAMEDATA.flash) {
-            this.add.text(x - 70, y - 6, GAMEDATA.flash, {fontSize: 12, color: '#fff000'});
+            this.add.text(x - 70, y - 6, GAMEDATA.flash, {fontStyle: 'bold', fontSize: '12px', color: '#fff000'});
             GAMEDATA.flash = null;
         }
 
@@ -122,8 +125,6 @@ class GameScene extends Phaser.Scene {
 
         let self = this;
 
-        let opponentCardPointer = 0;
-
         this.playerSlot;
         this.opponentSlot;
         this.playerRack;
@@ -167,9 +168,16 @@ class GameScene extends Phaser.Scene {
 
         this.socket.on('end', cash => {
             GAMEDATA.reward = cash;
-            GAMEDATA.cash += cash;
+            if(cash > 0) {
+                GAMEDATA.cash += cash + 12;
+            } else {
+                GAMEDATA.cash += cash;
+            }
             localStorage.setItem('NPcash', GAMEDATA.cash);
-            self.scene.start('endscene');
+            self.endBell.play();
+            self.endBell.once('complete', () => {
+                self.scene.start('endscene');
+            });
         })
 
         this.socket.on('playerChoice', number => {
@@ -181,14 +189,12 @@ class GameScene extends Phaser.Scene {
         });
 
         this.socket.on('opponentChoice', number => {
-            try{
-                let card = self.opponentDeck.getChildren()[opponentCardPointer];
+            self.opponentSlot.setTexture(`card${number}`).setAlpha(1);
+            let card = self.opponentDeck.getChildren().filter(card => card.number == 13)[0];
+            if(card) {
                 card.setActive(number);
-                opponentCardPointer += 1;
-                self.opponentSlot.setTexture(`card${number}`).setAlpha(1);
-                self.cardPlace.play();
-            } catch {
             }
+            self.cardPlace.play();
         });
 
         this.socket.on('turn', () => {
@@ -220,30 +226,38 @@ class EndScene extends Phaser.Scene {
     }
 
     preload() {
-        console.log('end');
         this.load.image('won', '../assets/won.png');
         this.load.image('lost', '../assets/lost.png');
         this.load.image('title', '../assets/numberoli.png');
         this.load.image('footer', '../assets/footer.png');
+        this.load.image('next', '../assets/next.png');
     }
 
     create() {
+        let self = this;
+
         let x = config.width / 2;
         let y = config.height;
 
-        this.add.image(x, 40, 'title');
+        this.add.image(x, 60, 'title');
         if(GAMEDATA.reward > 0) {
             this.add.image(x, y / 2, 'won');
+            this.add.text(x - 20, y / 2 + 27, `12 + ${GAMEDATA.reward}`, {
+                fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
         } else {
             this.add.image(x, y / 2, 'lost');
+            this.add.text(x - 20, y / 2 + 27, '-12', {
+                fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
         }
 
         this.add.text(x - 10, y / 2 - 27, GAMEDATA.enemy, {
-            fontSize: '14px', color: '#7869ac', fontStyle:'bold'});
-        this.add.text(x - 20, y / 2 + 27, `${GAMEDATA.reward}`, {
-            fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
+            fontSize: '13px', color: '#7869ac', fontStyle:'bold'});
         this.add.text(x, y / 2 + 88, `${GAMEDATA.cash}`, {
             fontSize: '30px', color: '#b9d370', fontStyle:'bold'});
+
+        this.add.image(x, y - 100, 'next').setScale(0.75).setInteractive().on('pointerdown', () => {
+            self.scene.start('homescene');
+        });
 
         this.add.image(x, y - 40, 'footer');
     }
