@@ -1,18 +1,16 @@
 {
-  "name": "multi-test",
+  "name": "numberoli",
   "version": "1.0.0",
-  "description": "",
+  "description": "Online-Multiplayer card game.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Akash S Panickar",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "nodemon": "^2.0.4",
     "socket.io": "^2.3.0"
   }
 }

@@ -4,6 +4,8 @@ const server = require('http').Server(app);
 const {join} = require('path');
 const io = require('socket.io')(server);
 
+const port = process.env.PORT || 8000;
+
 let rooms = {};
 let playerTable = {};
 let NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -14,7 +16,7 @@ app.get('/', (req, res) => {
     res.sendfile(join(__dirname, 'public', 'index.html'));
 })
 
-server.listen(8000, '0.0.0.0', () => {
+server.listen(port, () => {
     console.log('Server linstening on PORT:8000');
 })
 
