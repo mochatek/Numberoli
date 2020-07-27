@@ -54,7 +54,7 @@ class HomeScene extends Phaser.Scene {
 
         this.add.image(x, 60, 'title');
         this.add.image(x - 35, y - 140, 'wallet');
-        this.add.text(x + 5, y - 155, GAMEDATA.cash, {fontStyle: 'bold', fontSize: '35px', color: '#b9d370'});
+        this.add.text(x + 5, y - 160, GAMEDATA.cash, {fontFamily: 'Changa', fontStyle: 'bold', fontSize: '40px', color: '#b9d370'});
         this.add.image(x, config.height - 40, 'footer');
 
         let roomName = `<input type="text" name="roomName" placeholder="Room Name"
@@ -72,18 +72,26 @@ class HomeScene extends Phaser.Scene {
         this.joinRoom = this.add.image(x + 72, y + 36, 'join').setInteractive();
 
         this.createRoom.on('pointerdown', () => {
-            let roomName = self.roomName.getChildByName('roomName').value.trim();
-            if(roomName) {
-                GAMEDATA.room = roomName;
-                self.scene.start('gamescene');
+            if(GAMEDATA.cash >= 12) {
+                let roomName = self.roomName.getChildByName('roomName').value.trim();
+                if(roomName) {
+                    GAMEDATA.room = roomName;
+                    self.scene.start('gamescene');
+                }
+            } else {
+                window.alert('Not enough money in wallet. [Minimum ₹.12 needed to create]')
             }
         });
 
         this.joinRoom.on('pointerdown', () => {
-            let roomName = self.roomName.getChildByName('roomName').value.trim();
-            if(roomName) {
-                GAMEDATA.room = roomName;
-                self.scene.start('gamescene');
+            if(GAMEDATA.cash >= 12) {
+                let roomName = self.roomName.getChildByName('roomName').value.trim();
+                if(roomName) {
+                    GAMEDATA.room = roomName;
+                    self.scene.start('gamescene');
+                }
+            } else {
+                window.alert('Not enough money in wallet. [Minimum ₹.12 needed to join]')
             }
         });
     }
@@ -242,20 +250,23 @@ class EndScene extends Phaser.Scene {
         this.add.image(x, 60, 'title');
         if(GAMEDATA.reward > 0) {
             this.add.image(x, y / 2, 'won');
-            this.add.text(x - 20, y / 2 + 27, `12 + ${GAMEDATA.reward}`, {
-                fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
+            this.add.text(x - 20, y / 2 + 25, `12 + ${GAMEDATA.reward}`, {
+                fontFamily: 'Changa', fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
         } else {
             this.add.image(x, y / 2, 'lost');
-            this.add.text(x - 20, y / 2 + 27, '-12', {
-                fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
+            this.add.text(x - 20, y / 2 + 25, '-12', {
+                fontFamily: 'Changa', fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
         }
 
         this.add.text(x - 10, y / 2 - 27, GAMEDATA.enemy, {
-            fontSize: '13px', color: '#7869ac', fontStyle:'bold'});
-        this.add.text(x, y / 2 + 88, `${GAMEDATA.cash}`, {
-            fontSize: '30px', color: '#b9d370', fontStyle:'bold'});
+            fontFamily: 'Changa', fontSize: '13px', color: '#7869ac', fontStyle:'bold'});
+        this.add.text(x, y / 2 + 80, `${GAMEDATA.cash}`, {
+            fontFamily: 'Changa', fontSize: '40px', color: '#b9d370', fontStyle:'bold'});
 
-        this.add.image(x, y - 100, 'next').setScale(0.75).setInteractive().on('pointerdown', () => {
+        this.add.image(x, y - 95, 'next').setScale(0.75).setInteractive().on('pointerdown', () => {
+            GAMEDATA.enemy = null;
+            GAMEDATA.reward = null;
+            GAMEDATA.flash = null;
             self.scene.start('homescene');
         });
 

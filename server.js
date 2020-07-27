@@ -50,7 +50,9 @@ io.on('connection', (socket) => {
 
             NUMBERS.sort(() => 0.5 - Math.random());
             let opponentDeck = NUMBERS.slice(0, 5);
-            let playerDeck = NUMBERS.filter(num => !opponentDeck.includes(num)).splice(0, 5);
+            NUMBERS.sort(() => 0.5 - Math.random());
+            // let playerDeck = NUMBERS.filter(num => !opponentDeck.includes(num)).splice(0, 5);
+            let playerDeck =  NUMBERS.slice(0, 5);
 
             let opponentID = Object.keys(rooms[room].players)[0];
             let opponentName = rooms[room].players[opponentID].name;
