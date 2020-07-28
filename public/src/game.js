@@ -33,6 +33,24 @@ class Card extends Phaser.GameObjects.Sprite {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class Emote extends Phaser.GameObjects.Sprite {
+    constructor(scene, x, y, emote) {
+        super(scene, x, y, emote);
+        this.emote = emote;
+        this.setScale(0.625);
+        this.setInteractive();
+        this.setVisible(false);
+        this.on('pointerup', () => {
+            scene.socket.emit('emote', this.emote);
+            scene.playerEmote.anims.play(`${this.emote}Anim`, true);
+            toggleEmotes(scene);
+        })
+        scene.add.existing(this);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class HomeScene extends Phaser.Scene {
     constructor() {
         super('homescene');
@@ -122,20 +140,22 @@ class GameScene extends Phaser.Scene {
         this.load.image('rack', '../assets/rack.png');
         this.load.image('rackA', '../assets/rackActive.png');
         this.load.image('slotPanel', '../assets/slotPanel.png');
+        this.load.image('toggle', '../assets/toggle.png');
 
         this.load.audio('cardPlace', '../assets/cardPlace.wav');
         this.load.audio('endBell', '../assets/endBell.mp3');
+
+        this.load.spritesheet('laugh', '../assets/laugh.png', {frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet('cry', '../assets/cry.png', {frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet('tease', '../assets/tease.png', {frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet('swear', '../assets/swear.png', {frameWidth: 64, frameHeight: 64});
     }
 
     create() {
-        this.playerNums;
         this.playerTurn = false;
 
         let self = this;
 
-        this.playerSlot;
-        this.opponentSlot;
-        this.playerRack;
         this.opponentName = this.add.text((config.width - 340) / 2, 120, '▮ Waiting...', {fontFamily: 'Tahoma', color: '#87CEEB', fontSize: '12px'});
         this.playerDeck = this.add.group();
         this.opponentDeck = this.add.group();
@@ -156,6 +176,7 @@ class GameScene extends Phaser.Scene {
         showSlots(this);
         showOpponentDeck(this);
         showPlayerDeck(this);
+        setUpEmotes(this);
 
         this.input.setHitArea(this.playerDeck.getChildren()).on('gameobjectdown', (pointer, object) => {
             if(self.playerTurn && self.playerNums.includes(object.number)) {
@@ -163,6 +184,10 @@ class GameScene extends Phaser.Scene {
                 self.playerTurn = false;
                 self.playerRack.setTexture('rack');
             }
+        });
+
+        this.socket.on('emote', emote => {
+            self.opponentEmote.anims.play(`${emote}Anim`, true);
         });
 
         this.socket.on('deck', data => {
@@ -267,7 +292,7 @@ class EndScene extends Phaser.Scene {
             GAMEDATA.enemy = null;
             GAMEDATA.reward = null;
             GAMEDATA.flash = null;
-            self.scene.start('homescene');
+            location.reload();
         });
 
         this.add.image(x, y - 40, 'footer');
@@ -286,19 +311,90 @@ function setPlayerName() {
             }
         }
         localStorage.setItem('NPname', name);
-        localStorage.setItem('NPcash', 60);
+        localStorage.setItem('NPcash', 120);
     }
     GAMEDATA.name = name;
     GAMEDATA.cash = +localStorage.getItem('NPcash');
 }
 
+function setUpEmotes(scene) {
+    scene.anims.create({
+        key: 'laughAnim',
+        frames: scene.anims.generateFrameNumbers('laugh'),
+        frameRate: 24,
+        repeat: 0,
+        showOnStart: true,
+        hideOnComplete: true
+    });
+    scene.anims.create({
+            key: 'cryAnim',
+            frames: scene.anims.generateFrameNumbers('cry'),
+            frameRate: 24,
+            repeat: 0,
+            showOnStart: true,
+            hideOnComplete: true
+        });
+    scene.anims.create({
+            key: 'teaseAnim',
+            frames: scene.anims.generateFrameNumbers('tease'),
+            frameRate: 24,
+            repeat: 0,
+            showOnStart: true,
+            hideOnComplete: true
+        });
+    scene.anims.create({
+            key: 'swearAnim',
+            frames: scene.anims.generateFrameNumbers('swear'),
+            frameRate: 24,
+            repeat: 0,
+            showOnStart: true,
+            hideOnComplete: true
+        });
+
+    scene.emotes = scene.add.group();
+
+    let x = scene.emoteRack.x;
+    let y = scene.emoteRack.y - 80;
+
+    scene.emotes.addMultiple([
+        new Emote(scene, x, y, 'laugh'),
+        new Emote(scene, x, y + 40, 'cry'),
+        new Emote(scene, x, y + 80, 'swear'),
+        new Emote(scene, x, y + 120, 'tease'),
+        new Emote(scene, x, y + 160, 'tease')
+    ]);
+}
 
 function showInterface(scene) {
-    x = config.width / 2;
-    y = config.height;
+    let x = config.width / 2;
+    let y = config.height;
+
     scene.playerRack = scene.add.image(x - 10, y - 80, 'rack');
-    scene.add.image(x - 10, 70, 'rack');
+    scene.add.image(x -10, 70, 'rack');
     scene.add.image(x, y / 2, 'slotPanel').setScale(1.25);
+
+    scene.playerEmote = scene.add.sprite(x, y - 160, 'laugh').setVisible(false);
+    scene.opponentEmote = scene.add.sprite(x, 150, 'laugh').setVisible(false);
+
+    x = scene.playerRack.x  - 165;
+    y = scene.playerRack.y - 55;
+
+    scene.emoteRack = scene.add.image(x + 25, y - 115, 'rack').setAlpha(0.25).setScale(0.625).setAngle(90).setVisible(false);
+
+    scene.toggle = scene.add.image(x + 25, y, 'toggle').setInteractive();
+    scene.toggle.on('pointerup', () => {
+        toggleEmotes(scene);
+    });
+}
+
+function toggleEmotes(scene) {
+    if(scene.emoteRack.visible == false) {
+        scene.emoteRack.setVisible(true);
+    } else {
+        scene.emoteRack.setVisible(false);
+    }
+    scene.emotes.toggleVisible();
+    scene.toggle.toggleFlipY();
 }
 
 function showSlots(scene) {
@@ -326,7 +422,6 @@ function updatePlayerDeck(scene, cardNumbers) {
         card.number = number;
         card.setTexture(`card${number}`);
         card.setInteractive();
-        x += 48 + 20 ;
     });
 }
 
@@ -340,7 +435,9 @@ function showOpponentDeck(scene) {
     });
 }
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 const config = {
     type: Phaser.AUTO,

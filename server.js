@@ -4,7 +4,7 @@ const server = require('http').Server(app);
 const {join} = require('path');
 const io = require('socket.io')(server);
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 5000;
 
 let rooms = {};
 let playerTable = {};
@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 })
 
 server.listen(port, () => {
-    console.log('Server linstening on PORT:8000');
+    console.log(`Server linstening on PORT:${port}`);
 })
 
 io.on('connection', (socket) => {
@@ -76,9 +76,14 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('emote', emote => {
+        let room = playerTable[socket.id];
+        socket.broadcast.to(room).emit('emote', emote);
+    });
+
     socket.on('disconnect', () => {
         if(playerTable[socket.id]) {
-            room = playerTable[socket.id];
+            let room = playerTable[socket.id];
             delete playerTable[socket.id];
             if(Object.keys(rooms[room].players).length == 1) {
                 delete rooms[room];
@@ -90,7 +95,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('choice', number => {
-        room = playerTable[socket.id];
+        let room = playerTable[socket.id];
         if(rooms[room].players[socket.id].deck.includes(number)) {
             rooms[room].players[socket.id].deck = rooms[room].players[socket.id].deck.filter(num => num != number);
             socket.emit('playerChoice', number);
