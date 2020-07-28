@@ -149,6 +149,7 @@ class GameScene extends Phaser.Scene {
         this.load.spritesheet('cry', '../assets/cry.png', {frameWidth: 64, frameHeight: 64});
         this.load.spritesheet('tease', '../assets/tease.png', {frameWidth: 64, frameHeight: 64});
         this.load.spritesheet('swear', '../assets/swear.png', {frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet('sleep', '../assets/sleep.png', {frameWidth: 64, frameHeight: 64});
     }
 
     create() {
@@ -350,6 +351,14 @@ function setUpEmotes(scene) {
             showOnStart: true,
             hideOnComplete: true
         });
+    scene.anims.create({
+            key: 'sleepAnim',
+            frames: scene.anims.generateFrameNumbers('sleep'),
+            frameRate: 24,
+            repeat: 0,
+            showOnStart: true,
+            hideOnComplete: true
+        });
 
     scene.emotes = scene.add.group();
 
@@ -361,7 +370,7 @@ function setUpEmotes(scene) {
         new Emote(scene, x, y + 40, 'cry'),
         new Emote(scene, x, y + 80, 'swear'),
         new Emote(scene, x, y + 120, 'tease'),
-        new Emote(scene, x, y + 160, 'tease')
+        new Emote(scene, x, y + 160, 'sleep')
     ]);
 }
 
