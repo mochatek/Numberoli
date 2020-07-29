@@ -391,8 +391,8 @@ function showInterface(scene) {
     scene.add.image(x - 10, 70, 'rack');
     scene.add.image(x - 10, y / 2, 'slotPanel').setScale(1.25);
 
-    scene.playerEmote = scene.add.sprite(x, y - 160, 'laugh').setVisible(false);
-    scene.opponentEmote = scene.add.sprite(x, 150, 'laugh').setVisible(false);
+    scene.playerEmote = scene.add.sprite(x - 10, y - 160, 'laugh').setVisible(false);
+    scene.opponentEmote = scene.add.sprite(x - 10, 150, 'laugh').setVisible(false);
 }
 
 function setUpEmoteNChat(scene) {
