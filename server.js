@@ -78,6 +78,11 @@ io.on('connection', (socket) => {
         socket.broadcast.to(room).emit('emote', emote);
     });
 
+    socket.on('chat', msg => {
+        let room = playerTable[socket.id];
+        socket.broadcast.to(room).emit('chat', msg);
+    });
+
     socket.on('disconnect', () => {
         if(playerTable[socket.id]) {
             let room = playerTable[socket.id];

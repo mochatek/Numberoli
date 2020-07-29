@@ -177,7 +177,6 @@ class GameScene extends Phaser.Scene {
         showSlots(this);
         showOpponentDeck(this);
         showPlayerDeck(this);
-        setUpEmotes(this);
 
         this.input.setHitArea(this.playerDeck.getChildren()).on('gameobjectdown', (pointer, object) => {
             if(self.playerTurn && self.playerNums.includes(object.number)) {
@@ -191,12 +190,22 @@ class GameScene extends Phaser.Scene {
             self.opponentEmote.anims.play(`${emote}Anim`, true);
         });
 
+        this.socket.on('chat', msg => {
+            self.opponentMsg.setText(msg).setAlpha(1);
+            let tID = setTimeout(function() {
+                self.opponentMsg.setAlpha(0);
+                clearTimeout(tID);
+            }, 1000);
+        });
+
+
         this.socket.on('deck', data => {
             let {deck, enemy} =  data;
             self.playerNums = deck;
             self.opponentName.setText(`▮ ${enemy}`);
             GAMEDATA.enemy = enemy;
             updatePlayerDeck(self, self.playerNums);
+            setUpEmoteNChat(self);
             self.socket.off('deck');
         });
 
@@ -312,7 +321,7 @@ function setPlayerName() {
     GAMEDATA.cash = +localStorage.getItem('NPcash');
 }
 
-function setUpEmotes(scene) {
+function addEmotes(scene) {
     scene.anims.create({
         key: 'laughAnim',
         frames: scene.anims.generateFrameNumbers('laugh'),
@@ -378,19 +387,48 @@ function showInterface(scene) {
     let y = config.height;
 
     scene.playerRack = scene.add.image(x - 10, y - 80, 'rack');
-    scene.add.image(x -10, 70, 'rack');
-    scene.add.image(x, y / 2, 'slotPanel').setScale(1.25);
+    scene.add.image(x - 10, 70, 'rack');
+    scene.add.image(x - 10, y / 2, 'slotPanel').setScale(1.25);
 
     scene.playerEmote = scene.add.sprite(x, y - 160, 'laugh').setVisible(false);
     scene.opponentEmote = scene.add.sprite(x, 150, 'laugh').setVisible(false);
+}
 
-    x = scene.playerRack.x - 140;
-    y = scene.playerRack.y - 55;
+function setUpEmoteNChat(scene) {
+    let x = scene.playerRack.x - 140;
+    let y = scene.playerRack.y - 55;
+
     scene.toggle = scene.add.image(x, y, 'toggle').setInteractive().toggleFlipY();
     scene.toggle.on('pointerup', () => {
         toggleEmotes(scene);
     });
+
+    scene.opponentMsg = scene.add.text(x + 50, 150, '', {
+        fontFamily: 'Changa',
+        fontStyle: 'bold',
+        fontSize: '16px',
+        backgroundColor: '#ffffff',
+        color: '#ff0000',
+        align: 'center',
+        padding: 5,
+        fixedWidth: 180,
+        fixedHeight: 25,
+    }).setAlpha(0);
+
+    addEmotes(scene);
+
+    scene.chat = scene.add.image(x + 275, y, 'toggle').setInteractive();
+    scene.chat.on('pointerup', () => {
+        let msg = prompt('Enter message [ MAX 15 CHARS ]', 'Play fast !');
+        if(msg) {
+            if(msg.trim()) {
+                msg = msg.slice(0, 15);
+                scene.socket.emit('chat', msg);
+            }
+        }
+    });
 }
+
 
 function toggleEmotes(scene) {
     scene.emotes.toggleVisible();
@@ -398,7 +436,7 @@ function toggleEmotes(scene) {
 }
 
 function showSlots(scene) {
-    let gap = (config.width - 138) / 2;
+    let gap = (config.width - 138) / 2 - 10;
     let x = 32 + gap;
     let y = config.height / 2;
     scene.playerSlot = new Card(scene, x, y, 0);
