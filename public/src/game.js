@@ -141,6 +141,7 @@ class GameScene extends Phaser.Scene {
         this.load.image('rackA', '../assets/rackActive.png');
         this.load.image('slotPanel', '../assets/slotPanel.png');
         this.load.image('toggle', '../assets/toggle.png');
+        this.load.image('chat', '../assets/chat.png');
 
         this.load.audio('cardPlace', '../assets/cardPlace.wav');
         this.load.audio('endBell', '../assets/endBell.mp3');
@@ -408,7 +409,7 @@ function setUpEmoteNChat(scene) {
         fontStyle: 'bold',
         fontSize: '16px',
         backgroundColor: '#ffffff',
-        color: '#ff0000',
+        color: '#0f2f48',
         align: 'center',
         padding: 5,
         fixedWidth: 180,
@@ -417,7 +418,7 @@ function setUpEmoteNChat(scene) {
 
     addEmotes(scene);
 
-    scene.chat = scene.add.image(x + 275, y, 'toggle').setInteractive();
+    scene.chat = scene.add.image(x + 275, y, 'chat').setInteractive();
     scene.chat.on('pointerup', () => {
         let msg = prompt('Enter message [ MAX 15 CHARS ]', 'Play fast !');
         if(msg) {
