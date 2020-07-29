@@ -14,11 +14,11 @@ app.use(express.static(join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.sendfile(join(__dirname, 'public', 'index.html'));
-})
+});
 
 server.listen(port, () => {
     console.log(`Server linstening on PORT:${port}`);
-})
+});
 
 io.on('connection', (socket) => {
     socket.on('join', data => {
@@ -43,35 +43,32 @@ io.on('connection', (socket) => {
            if(Object.keys(rooms[room].players).length == 2) {
                 socket.emit('disconnect');
                 socket.disconnect(true);
+
            } else {
-            // Second player.
-            socket.join(room);
-            playerTable[socket.id] = room;
+                // Second player.
+                socket.join(room);
+                playerTable[socket.id] = room;
 
-            NUMBERS.sort(() => 0.5 - Math.random());
-            let opponentDeck = NUMBERS.slice(0, 5);
-            NUMBERS.sort(() => 0.5 - Math.random());
-            // let playerDeck = NUMBERS.filter(num => !opponentDeck.includes(num)).splice(0, 5);
-            let playerDeck =  NUMBERS.slice(0, 5);
+                NUMBERS.sort(() => 0.5 - Math.random());
+                let opponentDeck = NUMBERS.slice(0, 5);
+                NUMBERS.sort(() => 0.5 - Math.random());
+                let playerDeck =  NUMBERS.slice(0, 5);
 
-            let opponentID = Object.keys(rooms[room].players)[0];
-            let opponentName = rooms[room].players[opponentID].name;
+                let opponentID = Object.keys(rooms[room].players)[0];
+                let opponentName = rooms[room].players[opponentID].name;
 
-            rooms[room].players[opponentID].deck = opponentDeck;
-            rooms[room].players[socket.id] = {
-                name,
-                deck: playerDeck
-            };
+                rooms[room].players[opponentID].deck = opponentDeck;
+                rooms[room].players[socket.id] = {
+                    name,
+                    deck: playerDeck
+                };
 
-            socket.broadcast.to(room).emit('deck', {deck: opponentDeck, enemy: name});
-            socket.emit('deck', {deck: playerDeck, enemy: opponentName});
+                // Send decks to players.
+                socket.broadcast.to(room).emit('deck', {deck: opponentDeck, enemy: name});
+                socket.emit('deck', {deck: playerDeck, enemy: opponentName});
 
-            // Randomly initiate first turn to a player.
-            if(Math.random() <= 0.5) {
-                socket.broadcast.to(room).emit('turn');
-            } else {
-                socket.emit('turn');
-            }
+                // Randomly initiate first turn to a player.
+                Math.random() <= 0.5 ? socket.broadcast.to(room).emit('turn') : socket.emit('turn');
            }
         }
     });
@@ -85,26 +82,24 @@ io.on('connection', (socket) => {
         if(playerTable[socket.id]) {
             let room = playerTable[socket.id];
             delete playerTable[socket.id];
-            if(Object.keys(rooms[room].players).length == 1) {
-                delete rooms[room];
-            } else {
-                delete rooms[room].players[socket.id];
-            }
+            // Remove the entire room when leaving player is the last.
+            Object.keys(rooms[room].players).length == 1 ? delete rooms[room] : delete rooms[room].players[socket.id];
             socket.disconnect();
         }
     });
 
     socket.on('choice', number => {
         let room = playerTable[socket.id];
+
         if(rooms[room].players[socket.id].deck.includes(number)) {
             rooms[room].players[socket.id].deck = rooms[room].players[socket.id].deck.filter(num => num != number);
+            rooms[room].choices.push(number);
             socket.emit('playerChoice', number);
             socket.broadcast.to(room).emit('opponentChoice', number);
 
-            rooms[room].choices.push(number);
-
             if(rooms[room].choices.length == 1){
                 socket.broadcast.to(room).emit('turn');
+
             } else if(rooms[room].choices.length == 2) {
                 let opponentID = Object.keys(rooms[room].players).filter(id => id != socket.id)[0];
                 let reward = Math.abs(rooms[room].choices[0] - number);
@@ -146,19 +141,25 @@ io.on('connection', (socket) => {
 
                 } else {
                     io.to(room).emit('reward', 0);
-                    if(rooms[room].players[socket.id].deck.length == 0) {
+
+                    if(rooms[room].players[socket.id].deck.length + rooms[room].players[opponentID].deck.length == 0) {
+                        io.to(room).emit('end', 0);
+
+                    } else if(rooms[room].players[socket.id].deck.length == 0) {
                         cash = rooms[room].players[opponentID].deck.reduce((a, b) => a + b);
                         socket.emit('end', -12);
                         socket.broadcast.to(room).emit('end', cash);
+
                     } else if(rooms[room].players[opponentID].deck.length == 0) {
                         cash = rooms[room].players[socket.id].deck.reduce((a, b) => a + b);
                         socket.emit('end', cash);
                         socket.broadcast.to(room).emit('end', -12);
+
                     } else {
-                        socket.broadcast.to(room).emit('turn');
+                        Math.random() <= 0.5 ? socket.broadcast.to(room).emit('turn') : socket.emit('turn');
                     }
                 }
-
+                // Reset player choices for the room.
                 rooms[room].choices = [];
             }
         }

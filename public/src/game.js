@@ -7,6 +7,7 @@ let GAMEDATA = {
     flash: null
 };
 
+
 window.onload = setPlayerName;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +40,6 @@ class Emote extends Phaser.GameObjects.Sprite {
         this.emote = emote;
         this.setScale(0.625);
         this.setInteractive();
-        this.setVisible(false);
         this.on('pointerup', () => {
             scene.socket.emit('emote', this.emote);
             scene.playerEmote.anims.play(`${this.emote}Anim`, true);
@@ -202,11 +202,7 @@ class GameScene extends Phaser.Scene {
 
         this.socket.on('end', cash => {
             GAMEDATA.reward = cash;
-            if(cash > 0) {
-                GAMEDATA.cash += cash + 12;
-            } else {
-                GAMEDATA.cash += cash;
-            }
+            GAMEDATA.cash += cash > 0? cash + 12 : cash;
             localStorage.setItem('NPcash', GAMEDATA.cash);
             self.endBell.play();
             self.endBell.once('complete', () => {
@@ -241,6 +237,7 @@ class GameScene extends Phaser.Scene {
             self.playerSlot.setAlpha(0.25);
 
             if(number == -1) {
+                // Opponent scored.
                 let card = self.opponentDeck.getChildren().filter(card => card.number != 13)[0];
                 card.setActive(13);
             } else if(number > 0){
@@ -290,9 +287,6 @@ class EndScene extends Phaser.Scene {
             fontFamily: 'Changa', fontSize: '40px', color: '#b9d370', fontStyle:'bold'});
 
         this.add.image(x, y - 95, 'next').setScale(0.75).setInteractive().on('pointerdown', () => {
-            GAMEDATA.enemy = null;
-            GAMEDATA.reward = null;
-            GAMEDATA.flash = null;
             location.reload();
         });
 
@@ -362,8 +356,13 @@ function setUpEmotes(scene) {
 
     scene.emotes = scene.add.group();
 
-    let x = scene.emoteRack.x;
-    let y = scene.emoteRack.y - 80;
+    let x = scene.playerRack.x  - 165;
+    let y = scene.playerRack.y - 55;
+
+    scene.emotes.add(scene.add.image(x + 25, y - 115, 'rack').setAlpha(0.375).setScale(0.625).setAngle(90));
+
+    x += 25;
+    y -= 195;
 
     scene.emotes.addMultiple([
         new Emote(scene, x, y, 'laugh'),
@@ -385,23 +384,15 @@ function showInterface(scene) {
     scene.playerEmote = scene.add.sprite(x, y - 160, 'laugh').setVisible(false);
     scene.opponentEmote = scene.add.sprite(x, 150, 'laugh').setVisible(false);
 
-    x = scene.playerRack.x  - 165;
+    x = scene.playerRack.x - 140;
     y = scene.playerRack.y - 55;
-
-    scene.emoteRack = scene.add.image(x + 25, y - 115, 'rack').setAlpha(0.25).setScale(0.625).setAngle(90).setVisible(false);
-
-    scene.toggle = scene.add.image(x + 25, y, 'toggle').setInteractive();
+    scene.toggle = scene.add.image(x, y, 'toggle').setInteractive().toggleFlipY();
     scene.toggle.on('pointerup', () => {
         toggleEmotes(scene);
     });
 }
 
 function toggleEmotes(scene) {
-    if(scene.emoteRack.visible == false) {
-        scene.emoteRack.setVisible(true);
-    } else {
-        scene.emoteRack.setVisible(false);
-    }
     scene.emotes.toggleVisible();
     scene.toggle.toggleFlipY();
 }
