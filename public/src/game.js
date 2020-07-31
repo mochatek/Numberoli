@@ -249,7 +249,7 @@ class GameScene extends Phaser.Scene {
 
         this.socket.on('end', cash => {
             GAMEDATA.reward = cash;
-            GAMEDATA.cash += cash > 0? cash + 12 : cash;
+            GAMEDATA.cash += cash >= 0? cash + 12 : cash;
             localStorage.setItem('NPcash', GAMEDATA.cash);
             self.endBell.play();
             self.endBell.once('complete', () => {

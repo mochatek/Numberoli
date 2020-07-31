@@ -99,8 +99,8 @@ io.on('connection', (socket) => {
         if(rooms[room].players[socket.id].deck.includes(number)) {
             rooms[room].players[socket.id].deck = rooms[room].players[socket.id].deck.filter(num => num != number);
             rooms[room].choices.push(number);
-            socket.emit('playerChoice', number);
             socket.broadcast.to(room).emit('opponentChoice', number);
+            socket.emit('playerChoice', number);
 
             if(rooms[room].choices.length == 1){
                 socket.broadcast.to(room).emit('turn');
@@ -121,8 +121,8 @@ io.on('connection', (socket) => {
 
                     if(rooms[room].players[socket.id].deck.length == 0) {
                         cash = rooms[room].players[opponentID].deck.reduce((a, b) => a + b);
-                        socket.emit('end', -12);
                         socket.broadcast.to(room).emit('end', cash);
+                        socket.emit('end', -12);
                     } else {
                         socket.emit('turn');
                     }
@@ -130,16 +130,16 @@ io.on('connection', (socket) => {
                 } else if(rooms[room].choices[0] < number) {
                     if(!rooms[room].players[socket.id].deck.includes(reward)) {
                         rooms[room].players[socket.id].deck.push(reward);
-                        socket.emit('reward', reward);
                         socket.broadcast.to(room).emit('reward', -1);
+                        socket.emit('reward', reward);
                     } else {
                         io.to(room).emit('reward', 0)
                     }
 
                     if(rooms[room].players[opponentID].deck.length == 0) {
                         cash = rooms[room].players[socket.id].deck.reduce((a, b) => a + b);
-                        socket.emit('end', cash);
                         socket.broadcast.to(room).emit('end', -12);
+                        socket.emit('end', cash);
                     } else {
                         socket.broadcast.to(room).emit('turn');
                     }
@@ -152,13 +152,13 @@ io.on('connection', (socket) => {
 
                     } else if(rooms[room].players[socket.id].deck.length == 0) {
                         cash = rooms[room].players[opponentID].deck.reduce((a, b) => a + b);
-                        socket.emit('end', -12);
                         socket.broadcast.to(room).emit('end', cash);
+                        socket.emit('end', -12);
 
                     } else if(rooms[room].players[opponentID].deck.length == 0) {
                         cash = rooms[room].players[socket.id].deck.reduce((a, b) => a + b);
-                        socket.emit('end', cash);
                         socket.broadcast.to(room).emit('end', -12);
+                        socket.emit('end', cash);
 
                     } else {
                         Math.random() <= 0.5 ? socket.broadcast.to(room).emit('turn') : socket.emit('turn');
