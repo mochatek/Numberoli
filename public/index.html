@@ -8,9 +8,120 @@
     <script src=".\src\game.js"></script>
     <script src="\socket.io\socket.io.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* The Modal (background) */
+        .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 60px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        font-family: Changa;
+        }
+
+        /* Modal Content */
+        .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        width: 80%;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        -webkit-animation-name: animatetop;
+        -webkit-animation-duration: 0.4s;
+        animation-name: animatetop;
+        animation-duration: 0.4s;
+        font: 14px Tahoma;
+
+        }
+
+        /* Add Animation */
+        @-webkit-keyframes animatetop {
+        from {top:-300px; opacity:0} 
+        to {top:0; opacity:1}
+        }
+
+        @keyframes animatetop {
+        from {top:-300px; opacity:0}
+        to {top:0; opacity:1}
+        }
+
+        /* The Close Button */
+        .close {
+        color: white;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+        }
+
+        .modal-header {
+        padding: 2px 16px;
+        background-color: #47b1e5;
+        color: white;
+        }
+
+        .modal-body {padding: 2px 16px;}
+
+        .modal-footer {
+        padding: 2px 16px;
+        background-color: #5cb85c;
+        color: white;
+        }
+
+        p {
+            text-align: justify;
+        }
+        b {
+            color: blue;
+        }
+    </style>
 </head>
 <body>
     <div id="gameDiv">
     </div>
+    <div id="instruction" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" id="close">&times;</span>
+                <h2 align="center">INSTRUCTIONS</h2>
+            </div>
+            <div class="modal-body">
+                <p>Each <b>deck</b> is composed of <b>12 cards</b> with <b>values</b> ranging from <b>1 to 12</b>.</p>
+                <p>Both players will be handed <b>5 random cards</b> from their respective deck at the beginning of the game.</p>
+                <p>Both players will take <b>turns</b> to play <b>one card</b> in each <b>round</b>, with the <b>very first turn</b> chosen at <b>random</b>.</p>
+                <p>After each round, the player who played the <b>bigger card</b> will receive a <b>point card</b> amounting to the <b>difference</b> 
+                    in value between cards played in that round, provided the player <b>doesn't have that card already</b>.</p>
+                <p>The player who played the card with <b>smaller</b> value will take the <b>first turn</b> in the <b>next round</b>.</p>
+                <p>The game continues until either player has <b>no cards left</b> to play and the player with cards left wins.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let instruction = document.querySelector("#instruction");
+        let close = document.querySelector("#close");
+        close.onclick = function() {
+            instruction.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if(event.target == instruction) {
+                instruction.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>

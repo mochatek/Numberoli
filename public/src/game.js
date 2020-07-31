@@ -72,7 +72,34 @@ class HomeScene extends Phaser.Scene {
 
         this.add.image(x, 60, 'title');
         this.add.image(x - 35, y - 140, 'wallet');
-        this.add.text(x + 5, y - 160, GAMEDATA.cash, {fontFamily: 'Changa', fontStyle: 'bold', fontSize: '40px', color: '#b9d370'});
+        this.add.text(x + 5, y - 160, GAMEDATA.cash,
+            {
+                fontFamily: 'Changa',
+                fontStyle: 'bold',
+                fontSize: '40px',
+                color: '#b9d370',
+                stroke: '#00ff00',
+                strokeThickness: 1,
+            });
+
+        this.add.text(x - 130, y + 100, 'INSTRUCTIONS',
+            {
+                fontFamily: 'Changa',
+                fontStyle: 'bold',
+                stroke: '#ff0000',
+                strokeThickness: 5,
+                fontSize: '24px',
+                color: '#ffffff',
+                backgroundColor: '#f26a74',
+                fixedWidth: 260,
+                align: 'center',
+                padding: 5
+            })
+            .setInteractive()
+            .on('pointerdown', () => {
+                instruction.style.display = "block";
+            });
+
         this.add.image(x, config.height - 40, 'footer');
 
         let roomName = `<input type="text" name="roomName" placeholder="Room Name"
@@ -81,7 +108,12 @@ class HomeScene extends Phaser.Scene {
         this.roomName = this.add.dom(x, y - 36).createFromHTML(roomName);
 
         if(GAMEDATA.flash) {
-            this.add.text(x - 70, y - 6, GAMEDATA.flash, {fontStyle: 'bold', fontSize: '12px', color: '#fff000'});
+            this.add.text(x - 70, y - 6, GAMEDATA.flash,
+                {
+                    fontStyle: 'bold',
+                    fontSize: '12px',
+                    color: '#fff000'
+                });
             GAMEDATA.flash = null;
         }
 
@@ -158,7 +190,12 @@ class GameScene extends Phaser.Scene {
 
         let self = this;
 
-        this.opponentName = this.add.text((config.width - 340) / 2, 120, '▮ Waiting...', {fontFamily: 'Tahoma', color: '#87CEEB', fontSize: '12px'});
+        this.opponentName = this.add.text((config.width - 340) / 2, 120, '▮ Waiting...',
+            {
+                fontFamily: 'Tahoma',
+                color: '#87CEEB',
+                fontSize: '12px'
+            });
         this.playerDeck = this.add.group();
         this.opponentDeck = this.add.group();
 
@@ -283,18 +320,38 @@ class EndScene extends Phaser.Scene {
         this.add.image(x, 60, 'title');
         if(GAMEDATA.reward > 0) {
             this.add.image(x, y / 2, 'won');
-            this.add.text(x - 20, y / 2 + 25, `12 + ${GAMEDATA.reward}`, {
-                fontFamily: 'Changa', fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
+            this.add.text(x - 20, y / 2 + 25, `12 + ${GAMEDATA.reward}`,
+                {
+                    fontFamily: 'Changa',
+                    fontSize: '16px',
+                    color: '#f0874d',
+                    fontStyle:'bold'
+                });
         } else {
             this.add.image(x, y / 2, 'lost');
-            this.add.text(x - 20, y / 2 + 25, '-12', {
-                fontFamily: 'Changa', fontSize: '16px', color: '#f0874d', fontStyle:'bold'});
+            this.add.text(x - 20, y / 2 + 25, '-12',
+                {
+                    fontFamily: 'Changa',
+                    fontSize: '16px',
+                    color: '#f0874d',
+                    fontStyle:'bold'
+                });
         }
 
-        this.add.text(x - 10, y / 2 - 27, GAMEDATA.enemy, {
-            fontFamily: 'Changa', fontSize: '13px', color: '#7869ac', fontStyle:'bold'});
-        this.add.text(x, y / 2 + 80, `${GAMEDATA.cash}`, {
-            fontFamily: 'Changa', fontSize: '40px', color: '#b9d370', fontStyle:'bold'});
+        this.add.text(x - 10, y / 2 - 27, GAMEDATA.enemy,
+            {
+                fontFamily: 'Changa',
+                fontSize: '13px',
+                color: '#7869ac',
+                fontStyle:'bold'
+            });
+        this.add.text(x, y / 2 + 80, `${GAMEDATA.cash}`,
+            {
+                fontFamily: 'Changa',
+                fontSize: '40px',
+                color: '#b9d370',
+                fontStyle:'bold'
+            });
 
         this.add.image(x, y - 95, 'next').setScale(0.75).setInteractive().on('pointerdown', () => {
             location.reload();
@@ -387,7 +444,7 @@ function showInterface(scene) {
     let x = config.width / 2;
     let y = config.height;
 
-    scene.playerRack = scene.add.image(x - 10, y - 80, 'rack');
+    scene.playerRack = scene.add.image(x - 10, y - 70, 'rack');
     scene.add.image(x - 10, 70, 'rack');
     scene.add.image(x - 10, y / 2, 'slotPanel').setScale(1.25);
 
@@ -404,6 +461,17 @@ function setUpEmoteNChat(scene) {
         toggleEmotes(scene);
     });
 
+    scene.playerMsg = scene.add.text(x + 50, y - 50, '', {
+        fontFamily: 'Changa',
+        fontStyle: 'bold',
+        fontSize: '16px',
+        backgroundColor: '#ffffff',
+        color: '#0f2f48',
+        align: 'center',
+        padding: 5,
+        fixedWidth: 180,
+        fixedHeight: 25,
+    }).setAlpha(0);
     scene.opponentMsg = scene.add.text(x + 50, 150, '', {
         fontFamily: 'Changa',
         fontStyle: 'bold',
@@ -425,6 +493,12 @@ function setUpEmoteNChat(scene) {
             if(msg.trim()) {
                 msg = msg.slice(0, 15);
                 scene.socket.emit('chat', msg);
+
+                scene.playerMsg.setText(msg).setAlpha(1);
+                let tID = setTimeout(function() {
+                    scene.playerMsg.setAlpha(0);
+                    clearTimeout(tID);
+                }, 1000);
             }
         }
     });
@@ -448,7 +522,7 @@ function showSlots(scene) {
 function showPlayerDeck(scene) {
     let gap = (config.width - 340) / 2;
     let x = 24 + gap;
-    let y = config.height - 80;
+    let y = scene.playerRack.y;
     [1,2,3,4,5].forEach(() => {
         scene.playerDeck.add(new Card(scene, x, y, 13));
         x += 48 + 20 ;
