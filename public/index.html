@@ -14,7 +14,7 @@
         display: none; /* Hidden by default */
         position: fixed; /* Stay in place */
         z-index: 1; /* Sit on top */
-        padding-top: 60px; /* Location of the box */
+        padding-top: 110px; /* Location of the box */
         left: 0;
         top: 0;
         width: 100%; /* Full width */
@@ -85,8 +85,29 @@
         p {
             text-align: justify;
         }
-        b {
-            color: blue;
+
+        .rule1 {
+            color: #7869ac;
+        }
+
+        .rule2 {
+            color: #d47db0;
+        }
+
+        .rule3 {
+            color: #f26a74;
+        }
+
+        .rule4 {
+            color: #f0874d;
+        }
+
+        .rule5 {
+            color: #e9c401;
+        }
+
+        .rule6 {
+            color: green;
         }
     </style>
 </head>
@@ -100,13 +121,13 @@
                 <h2 align="center">INSTRUCTIONS</h2>
             </div>
             <div class="modal-body">
-                <p>Each <b>deck</b> is composed of <b>12 cards</b> with <b>values</b> ranging from <b>1 to 12</b>.</p>
-                <p>Both players will be handed <b>5 random cards</b> from their respective deck at the beginning of the game.</p>
-                <p>Both players will take <b>turns</b> to play <b>one card</b> in each <b>round</b>, with the <b>very first turn</b> chosen at <b>random</b>.</p>
-                <p>After each round, the player who played the <b>bigger card</b> will receive a <b>point card</b> amounting to the <b>difference</b> 
-                    in value between cards played in that round, provided the player <b>doesn't have that card already</b>.</p>
-                <p>The player who played the card with <b>smaller</b> value will take the <b>first turn</b> in the <b>next round</b>.</p>
-                <p>The game continues until either player has <b>no cards left</b> to play and the player with cards left wins.</p>
+                <p>Each <b class="rule1">deck</b> is composed of <b class="rule1">12 cards</b> with <b class="rule1">values</b> ranging from <b class="rule1">1 to 12</b>.</p>
+                <p>Both players will be handed <b class="rule2">5 random cards</b> from their respective deck at the beginning of the game.</p>
+                <p>Both players will take <b class="rule3">turns</b> to play <b class="rule3">one card</b> in each <b class="rule3">round</b>, with the <b class="rule3">very first turn</b> chosen at <b class="rule3">random</b>.</p>
+                <p>After each round, the player who played the <b class="rule4">bigger card</b> will receive a <b class="rule4">point card</b> amounting to the <b class="rule4">difference</b> 
+                    in value between cards played in that round, provided the player <b class="rule4">doesn't have that card already</b>.</p>
+                <p>The player who played the card with <b class="rule5">smaller</b> value will take the <b class="rule5">first turn</b> in the <b class="rule5">next round</b>.</p>
+                <p>The game continues until either player has <b class="rule6">no cards left</b> to play, and the other player with cards left is declared the <b class="rule6">WINNER !</b></p>
             </div>
         </div>
     </div>

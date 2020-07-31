@@ -175,7 +175,7 @@ class GameScene extends Phaser.Scene {
         this.load.image('toggle', '../assets/toggle.png');
         this.load.image('chat', '../assets/chat.png');
 
-        this.load.audio('cardPlace', '../assets/cardPlace.wav');
+        this.load.audio('cardPlace', '../assets/cardPlace.mp3');
         this.load.audio('endBell', '../assets/endBell.mp3');
 
         this.load.spritesheet('laugh', '../assets/laugh.png', {frameWidth: 64, frameHeight: 64});
