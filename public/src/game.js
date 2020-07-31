@@ -287,10 +287,19 @@ class GameScene extends Phaser.Scene {
                 // Opponent scored.
                 let card = self.opponentDeck.getChildren().filter(card => card.number != 13)[0];
                 card.setActive(13);
-            } else if(number > 0){
+            } else if(number > 0) {
                 self.playerNums.push(number);
                 let card = self.playerDeck.getChildren().filter(card => card.number == 0)[0];
-                card.setActive(number);
+                card.setActive(13);
+                self.tweens.add({
+                    targets: card,
+                    scaleX: '+=0.25',
+                    scaleY: '+=0.25',
+                    duration: 300,
+                    ease: 'Linear',
+                    yoyo: true,
+                    onComplete: function() { card.setActive(number) }
+                });
             }
         });
     }
@@ -318,7 +327,7 @@ class EndScene extends Phaser.Scene {
         let y = config.height;
 
         this.add.image(x, 60, 'title');
-        if(GAMEDATA.reward > 0) {
+        if(GAMEDATA.reward >= 0) {
             this.add.image(x, y / 2, 'won');
             this.add.text(x - 20, y / 2 + 25, `12 + ${GAMEDATA.reward}`,
                 {
