@@ -175,6 +175,7 @@ class GameScene extends Phaser.Scene {
         this.load.image('toggle', '../assets/toggle.png');
         this.load.image('chat', '../assets/chat.png');
 
+        this.load.audio('bgm', '../assets/bgm.mp3');
         this.load.audio('cardPlace', '../assets/cardPlace.mp3');
         this.load.audio('endBell', '../assets/endBell.mp3');
 
@@ -186,6 +187,12 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.bgm = this.sound.add('bgm',
+            {
+                volume: 0.5,
+                loop: true
+            });
+
         this.playerTurn = false;
 
         let self = this;
@@ -245,12 +252,14 @@ class GameScene extends Phaser.Scene {
             updatePlayerDeck(self, self.playerNums);
             setUpEmoteNChat(self);
             self.socket.off('deck');
+            self.bgm.play();
         });
 
         this.socket.on('end', cash => {
             GAMEDATA.reward = cash;
             GAMEDATA.cash += cash >= 0? cash + 12 : cash;
             localStorage.setItem('NPcash', GAMEDATA.cash);
+            self.bgm.stop();
             self.endBell.play();
             self.endBell.once('complete', () => {
                 self.scene.start('endscene');
