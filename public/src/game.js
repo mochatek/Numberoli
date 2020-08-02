@@ -184,6 +184,7 @@ class GameScene extends Phaser.Scene {
         this.load.spritesheet('tease', '../assets/tease.png', {frameWidth: 64, frameHeight: 64});
         this.load.spritesheet('swear', '../assets/swear.png', {frameWidth: 64, frameHeight: 64});
         this.load.spritesheet('sleep', '../assets/sleep.png', {frameWidth: 64, frameHeight: 64});
+        this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 32, frameHeight: 32});
     }
 
     create() {
@@ -227,6 +228,8 @@ class GameScene extends Phaser.Scene {
             if(self.playerTurn && self.playerNums.includes(object.number)) {
                 self.socket.emit('choice', object.number);
                 self.playerTurn = false;
+                self.arrow.setAlpha(0);
+                self.arrow.anims.stop();
                 self.playerRack.setTexture('rack');
             }
         });
@@ -286,6 +289,8 @@ class GameScene extends Phaser.Scene {
         this.socket.on('turn', () => {
             self.playerTurn = true;
             self.playerRack.setTexture('rackA');
+            self.arrow.setAlpha(1);
+            self.arrow.anims.play('bounce', true);
         });
 
         this.socket.on('reward', number => {
@@ -468,6 +473,15 @@ function showInterface(scene) {
 
     scene.playerEmote = scene.add.sprite(x - 10, y - 160, 'laugh').setVisible(false);
     scene.opponentEmote = scene.add.sprite(x - 10, 150, 'laugh').setVisible(false);
+
+    scene.arrow = scene.add.sprite(x - 10, y - 125, 'arrow').setAlpha(0);
+
+    scene.anims.create({
+        key: 'bounce',
+        frames: scene.anims.generateFrameNumbers('arrow'),
+        frameRate: 8,
+        repeat: -1,
+    });
 }
 
 function setUpEmoteNChat(scene) {
