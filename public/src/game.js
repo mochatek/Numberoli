@@ -1,15 +1,3 @@
-let GAMEDATA = {
-    name: null,
-    reward: null,
-    cash: null,
-    room: null,
-    enemy: null,
-    flash: null
-};
-
-
-window.onload = setPlayerName;
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class Card extends Phaser.GameObjects.Sprite {
@@ -54,6 +42,8 @@ class Emote extends Phaser.GameObjects.Sprite {
 class HomeScene extends Phaser.Scene {
     constructor() {
         super('homescene');
+        this.GAMEDATA = generatePlayerProfile();
+        console.log(this.GAMEDATA);
     }
 
     preload() {
@@ -64,15 +54,19 @@ class HomeScene extends Phaser.Scene {
         this.load.image('wallet', '../assets/wallet.png')
     }
 
-    create() {
+    create(GAMEDATA) {
         let self = this;
+
+        if(!GAMEDATA) {
+            this.GAMEDATA = GAMEDATA;
+        }
 
         let x = config.width / 2;
         let y = config.height / 2;
 
         this.add.image(x, 60, 'title');
         this.add.image(x - 35, y - 140, 'wallet');
-        this.add.text(x + 5, y - 160, GAMEDATA.cash,
+        this.add.text(x + 5, y - 160, this.GAMEDATA.cash,
             {
                 fontFamily: 'Changa',
                 fontStyle: 'bold',
@@ -107,14 +101,14 @@ class HomeScene extends Phaser.Scene {
                     color: white; background: #091c2b; border: 2px solid #059e9e">`;
         this.roomName = this.add.dom(x, y - 36).createFromHTML(roomName);
 
-        if(GAMEDATA.flash) {
-            this.add.text(x - 70, y - 6, GAMEDATA.flash,
+        if(this.GAMEDATA.flash) {
+            this.add.text(x - 80, y - 6, this.GAMEDATA.flash,
                 {
                     fontStyle: 'bold',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     color: '#fff000'
                 });
-            GAMEDATA.flash = null;
+            this.GAMEDATA.flash = null;
         }
 
         this.createRoom = this.add.image(x - 72, y + 36, 'create').setInteractive();
@@ -122,11 +116,11 @@ class HomeScene extends Phaser.Scene {
         this.joinRoom = this.add.image(x + 72, y + 36, 'join').setInteractive();
 
         this.createRoom.on('pointerdown', () => {
-            if(GAMEDATA.cash >= 12) {
+            if(this.GAMEDATA.cash >= 12) {
                 let roomName = self.roomName.getChildByName('roomName').value.trim();
                 if(roomName) {
-                    GAMEDATA.room = roomName;
-                    self.scene.start('gamescene');
+                    self.GAMEDATA.room = roomName;
+                    self.scene.start('gamescene', self.GAMEDATA);
                 }
             } else {
                 window.alert('Not enough money in wallet. [Minimum ₹.12 needed to create]')
@@ -134,11 +128,11 @@ class HomeScene extends Phaser.Scene {
         });
 
         this.joinRoom.on('pointerdown', () => {
-            if(GAMEDATA.cash >= 12) {
+            if(self.GAMEDATA.cash >= 12) {
                 let roomName = self.roomName.getChildByName('roomName').value.trim();
                 if(roomName) {
-                    GAMEDATA.room = roomName;
-                    self.scene.start('gamescene');
+                    self.GAMEDATA.room = roomName;
+                    self.scene.start('gamescene', self.GAMEDATA);
                 }
             } else {
                 window.alert('Not enough money in wallet. [Minimum ₹.12 needed to join]')
@@ -187,7 +181,9 @@ class GameScene extends Phaser.Scene {
         this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 32, frameHeight: 32});
     }
 
-    create() {
+    create(GAMEDATA) {
+        this.GAMEDATA = GAMEDATA;
+
         this.bgm = this.sound.add('bgm',
             {
                 volume: 0.5,
@@ -212,11 +208,11 @@ class GameScene extends Phaser.Scene {
 
         this.socket = io();
 
-        this.socket.emit('join', {name: GAMEDATA.name, room: GAMEDATA.room});
+        this.socket.emit('join', {name: this.GAMEDATA.name, room: this.GAMEDATA.room});
 
         this.socket.on('disconnect', () => {
-            GAMEDATA.flash = 'Oops!! Room is full.';
-            this.scene.start('homescene');
+            self.GAMEDATA.flash = 'OOPS!! ROOM IS FULL';
+            self.scene.start('homescene', self.GAMEDATA);
         });
 
         showInterface(this);
@@ -251,7 +247,7 @@ class GameScene extends Phaser.Scene {
             let {deck, enemy} =  data;
             self.playerNums = deck;
             self.opponentName.setText(`▮ ${enemy}`);
-            GAMEDATA.enemy = enemy;
+            self.GAMEDATA.enemy = enemy;
             updatePlayerDeck(self, self.playerNums);
             setUpEmoteNChat(self);
             self.socket.off('deck');
@@ -259,13 +255,13 @@ class GameScene extends Phaser.Scene {
         });
 
         this.socket.on('end', cash => {
-            GAMEDATA.reward = cash;
-            GAMEDATA.cash += cash >= 0? cash + 12 : cash;
-            localStorage.setItem('NPcash', GAMEDATA.cash);
+            self.GAMEDATA.reward = cash;
+            self.GAMEDATA.cash += cash >= 0? cash + 12 : cash;
+            localStorage.setItem('NPcash', self.GAMEDATA.cash);
             self.bgm.stop();
             self.endBell.play();
             self.endBell.once('complete', () => {
-                self.scene.start('endscene');
+                self.scene.start('endscene', self.GAMEDATA);
             });
         })
 
@@ -334,16 +330,18 @@ class EndScene extends Phaser.Scene {
         this.load.image('next', '../assets/next.png');
     }
 
-    create() {
+    create(GAMEDATA) {
         let self = this;
+
+        this.GAMEDATA = GAMEDATA;
 
         let x = config.width / 2;
         let y = config.height;
 
         this.add.image(x, 60, 'title');
-        if(GAMEDATA.reward >= 0) {
+        if(this.GAMEDATA.reward >= 0) {
             this.add.image(x, y / 2, 'won');
-            this.add.text(x - 20, y / 2 + 25, `12 + ${GAMEDATA.reward}`,
+            this.add.text(x - 20, y / 2 + 25, `12 + ${this.GAMEDATA.reward}`,
                 {
                     fontFamily: 'Changa',
                     fontSize: '16px',
@@ -361,14 +359,14 @@ class EndScene extends Phaser.Scene {
                 });
         }
 
-        this.add.text(x - 10, y / 2 - 27, GAMEDATA.enemy,
+        this.add.text(x - 10, y / 2 - 27, this.GAMEDATA.enemy,
             {
                 fontFamily: 'Changa',
                 fontSize: '13px',
                 color: '#7869ac',
                 fontStyle:'bold'
             });
-        this.add.text(x, y / 2 + 80, `${GAMEDATA.cash}`,
+        this.add.text(x, y / 2 + 80, `${this.GAMEDATA.cash}`,
             {
                 fontFamily: 'Changa',
                 fontSize: '40px',
@@ -386,7 +384,16 @@ class EndScene extends Phaser.Scene {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function setPlayerName() {
+function generatePlayerProfile() {
+    let GAMEDATA = {
+        name: null,
+        reward: null,
+        cash: null,
+        room: null,
+        enemy: null,
+        flash: null
+    };
+
     let name = localStorage.getItem('NPname');
     if(!name) {
         while(!name) {
@@ -400,6 +407,7 @@ function setPlayerName() {
     }
     GAMEDATA.name = name;
     GAMEDATA.cash = +localStorage.getItem('NPcash');
+    return GAMEDATA;
 }
 
 function addEmotes(scene) {
