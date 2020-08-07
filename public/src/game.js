@@ -43,7 +43,6 @@ class HomeScene extends Phaser.Scene {
     constructor() {
         super('homescene');
         this.GAMEDATA = generatePlayerProfile();
-        console.log(this.GAMEDATA);
     }
 
     preload() {
@@ -210,7 +209,7 @@ class GameScene extends Phaser.Scene {
 
         this.socket.emit('join', {name: this.GAMEDATA.name, room: this.GAMEDATA.room});
 
-        this.socket.on('disconnect', () => {
+        this.socket.on('rejected', () => {
             self.GAMEDATA.flash = 'OOPS!! ROOM IS FULL';
             self.scene.start('homescene', self.GAMEDATA);
         });
@@ -242,7 +241,6 @@ class GameScene extends Phaser.Scene {
             }, 1000);
         });
 
-
         this.socket.on('deck', data => {
             let {deck, enemy} =  data;
             self.playerNums = deck;
@@ -261,6 +259,7 @@ class GameScene extends Phaser.Scene {
             self.bgm.stop();
             self.endBell.play();
             self.endBell.once('complete', () => {
+                self.socket.disconnect();
                 self.scene.start('endscene', self.GAMEDATA);
             });
         })
@@ -375,7 +374,11 @@ class EndScene extends Phaser.Scene {
             });
 
         this.add.image(x, y - 95, 'next').setScale(0.75).setInteractive().on('pointerdown', () => {
-            location.reload();
+            self.GAMEDATA.reward = null;
+            self.GAMEDATA.room = null;
+            self.GAMEDATA.enemy = null;
+
+            self.scene.start('homescene', self.GAMEDATA);
         });
 
         this.add.image(x, y - 40, 'footer');
