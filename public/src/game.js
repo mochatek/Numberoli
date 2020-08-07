@@ -214,6 +214,19 @@ class GameScene extends Phaser.Scene {
             self.scene.start('homescene', self.GAMEDATA);
         });
 
+        this.socket.on('left', () => {
+            if(self.GAMEDATA.status != 'end') {
+                self.GAMEDATA.status = null;
+                self.GAMEDATA.room = null;
+                self.GAMEDATA.enemy = null;
+                self.GAMEDATA.flash = "Please Restart Game.";
+
+                self.bgm.stop();
+                self.socket.disconnect();
+                self.scene.start('homescene', self.GAMEDATA);
+            }
+        });
+
         showInterface(this);
         showSlots(this);
         showOpponentDeck(this);
@@ -242,6 +255,8 @@ class GameScene extends Phaser.Scene {
         });
 
         this.socket.on('deck', data => {
+            self.GAMEDATA.status = 'start';
+
             let {deck, enemy} =  data;
             self.playerNums = deck;
             self.opponentName.setText(`▮ ${enemy}`);
@@ -253,6 +268,8 @@ class GameScene extends Phaser.Scene {
         });
 
         this.socket.on('end', cash => {
+            self.GAMEDATA.status = 'end';
+
             self.GAMEDATA.reward = cash;
             self.GAMEDATA.cash += cash >= 0? cash + 12 : cash;
             localStorage.setItem('NPcash', self.GAMEDATA.cash);
@@ -374,6 +391,7 @@ class EndScene extends Phaser.Scene {
             });
 
         this.add.image(x, y - 95, 'next').setScale(0.75).setInteractive().on('pointerdown', () => {
+            self.GAMEDATA.status = null;
             self.GAMEDATA.reward = null;
             self.GAMEDATA.room = null;
             self.GAMEDATA.enemy = null;
@@ -394,7 +412,8 @@ function generatePlayerProfile() {
         cash: null,
         room: null,
         enemy: null,
-        flash: null
+        flash: null,
+        status: null
     };
 
     let name = localStorage.getItem('NPname');

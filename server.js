@@ -97,7 +97,12 @@ io.on('connection', (socket) => {
                 let room = playerTable[socket.id];
                 delete playerTable[socket.id];
                 // Remove the entire room when leaving player is the last.
-                Object.keys(rooms[room].players).length == 1 ? delete rooms[room] : delete rooms[room].players[socket.id];
+                if(Object.keys(rooms[room].players).length == 1) {
+                    delete rooms[room];
+                } else {
+                    delete rooms[room].players[socket.id];
+                    socket.broadcast.to(room).emit('left');
+                }
                 socket.disconnect();
             }
         } catch {}
