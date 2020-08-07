@@ -74,21 +74,27 @@ io.on('connection', (socket) => {
                     Math.random() <= 0.5 ? socket.broadcast.to(room).emit('turn') : socket.emit('turn');
                 }
             }
-        } catch {}
+        } catch(err) {
+            console.log(err);
+        }
     });
 
     socket.on('emote', emote => {
         try {
             let room = playerTable[socket.id];
             socket.broadcast.to(room).emit('emote', emote);
-        } catch {}
+        } catch(err) {
+            console.log(err);
+        }
     });
 
     socket.on('chat', msg => {
         try {
             let room = playerTable[socket.id];
             socket.broadcast.to(room).emit('chat', msg);
-        } catch {}
+        } catch(err) {
+            console.log(err);
+        }
     });
 
     socket.on('disconnect', () => {
@@ -105,7 +111,9 @@ io.on('connection', (socket) => {
                 }
                 socket.disconnect();
             }
-        } catch {}
+        } catch(err) {
+            console.log(err);
+        }
     });
 
     socket.on('choice', number => {
@@ -184,6 +192,8 @@ io.on('connection', (socket) => {
                     rooms[room].choices = [];
                 }
             }
-        } catch {}
+        } catch(err) {
+            console.log(err);
+        }
     });
 });
