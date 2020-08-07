@@ -4,6 +4,8 @@ const server = require('http').Server(app);
 const { join } = require('path');
 const io = require('socket.io')(server);
 
+io.set('transports', ['websocket']);
+
 const port = process.env.PORT || 5000;
 
 let rooms = {};

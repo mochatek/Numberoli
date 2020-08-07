@@ -205,7 +205,7 @@ class GameScene extends Phaser.Scene {
         this.endBell = this.sound.add('endBell');
         this.cardPlace = this.sound.add('cardPlace');
 
-        this.socket = io();
+        this.socket = io({transports: ['websocket']});
 
         this.socket.emit('join', {name: this.GAMEDATA.name, room: this.GAMEDATA.room});
 
